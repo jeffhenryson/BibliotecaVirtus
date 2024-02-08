@@ -9,12 +9,12 @@
       </div>
 
       <div class="form-group">
-        <label for="firstName">Primeiro Nome:</label>
+        <label for="firstName">Nome:</label>
         <input type="text" id="firstName" v-model="user.firstName" required>
       </div>
 
       <div class="form-group">
-        <label for="secondName">Segundo Nome:</label>
+        <label for="secondName">Sobrenome:</label>
         <input type="text" id="secondName" v-model="user.secondName" required>
       </div>
 
@@ -33,12 +33,12 @@
         <input type="password" id="confirmPassword" v-model="confirmPassword" required>
       </div>
 
-      <div v-if="passwordError" class="error-message">
-        <p>A senha deve ter pelo menos 6 caracteres, incluir uma letra maiúscula, um número e um símbolo.</p>
+      <div v-if="emailError" class="error-message">
+        <p>{{ emailErrorMessage || "O e-mail está com o domínio errado" }}</p>
       </div>
 
-      <div v-if="emailError" class="error-message">
-        <p>O e-mail está com o domínio errado</p>
+      <div v-if="usernameError" class="error-message">
+        <p>{{ usernameErrorMessage }}</p>
       </div>
 
       <div v-if="passwordMismatch" class="error-message">
@@ -55,7 +55,7 @@ export default {
   name: 'SignupPage',
   data() {
     return {
-      user: {  
+      user: {
         username: '',
         firstName: '',
         secondName: '',
@@ -63,9 +63,12 @@ export default {
         password: '',
       },
       confirmPassword: '',
+      usernameError: false, // Adicionado para o erro de nome de usuário
+      usernameErrorMessage: '', // Mensagem de erro personalizada para nome de usuário
       passwordMismatch: false,
       emailError: false,
       passwordError: false,
+      emailErrorMessage: '',
     };
   },
   methods: {
@@ -76,47 +79,65 @@ export default {
       const hasSymbol = /[!@#$%^&*(),.?":{}|<>]/.test(password);
       return minLength && hasUpperCase && hasNumber && hasSymbol;
     },
+    validateEmail(email) {
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return emailPattern.test(email);
+    },
     async submitForm() {
-
+      this.passwordMismatch = this.user.password !== this.confirmPassword;
+      this.emailError = !this.validateEmail(this.user.email);
       this.passwordError = !this.validatePassword(this.user.password);
+      this.emailErrorMessage = '';
+      this.usernameError = false;
+      this.usernameErrorMessage = '';
+
       if (this.emailError || this.passwordMismatch || this.passwordError) {
         return;
       }
-      
-      if (!this.emailError && !this.passwordMismatch && !this.passwordError) {
-        const userData = {
-          username: this.user.username,
-          primeiro_nome: this.user.firstName,
-          segundo_nome: this.user.secondName,
-          email: this.user.email,
-          password: this.user.password,
-        };
-        
-        try {
-          const response = await fetch('http://127.0.0.1:8000/cadastro', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(userData),
-          });
 
-          if (!response.ok) {
+      const userData = {
+        username: this.user.username,
+        primeiro_nome: this.user.firstName,
+        segundo_nome: this.user.secondName,
+        email: this.user.email,
+        password: this.user.password,
+      };
+
+      try {
+        const response = await fetch('http://127.0.0.1:8000/cadastro', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(userData),
+        });
+
+        if (!response.ok) {
+          const responseBody = await response.json(); // Obter o corpo da resposta
+          if (response.status === 400) {
+            if (responseBody.detail === 'Username already registered') {
+              this.usernameError = true;
+              this.usernameErrorMessage = "Nome de usuário já existe. Escolha outro nome.";
+            } else if (responseBody.detail === 'Email already registered') {
+              this.emailError = true;
+              this.emailErrorMessage = "E-mail já cadastrado. Faça login ou insira outro e-mail.";
+            } else {
+              throw new Error('Algo deu errado com o pedido de cadastro');
+            }
+          } else {
             throw new Error('Algo deu errado com o pedido de cadastro');
           }
-
+        } else {
           this.$router.push('/');
-
-        } catch (error) {
-          console.error('Erro ao enviar o formulário:', error);
         }
+      } catch (error) {
+        console.error('Erro ao enviar o formulário:', error);
       }
     }
   }
 };
 </script>
 
-  
 <style scoped>
 .signup-container {
   max-width: 300px;

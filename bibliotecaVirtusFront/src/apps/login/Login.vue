@@ -1,69 +1,57 @@
 <template>
-    <div class="login-container">
-      <h1>Login</h1>
-      <form @submit.prevent="submitForm">
-        <div>
-          <label for="firstName">Nome:</label>
-          <input type="text" id="firstName" v-model="user.firstName" required>
-        </div>
+  <div class="login-container">
+    <h1>Login</h1>
+    <form @submit.prevent="submitForm">
+
+      <div>
+        <label for="email">E-mail:</label>
+        <input type="email" id="email" v-model="user.email" required>
+      </div>
+
+      <div>
+        <label for="password">Senha:</label>
+        <input type="password" id="password" v-model="user.password" required>
+      </div>
+
+      <button type="submit">Entrar</button>
+    </form>
+  </div>
+</template>
+
   
-        <div>
-          <label for="lastName">Sobrenome:</label>
-          <input type="text" id="lastName" v-model="user.lastName" required>
-        </div>
-  
-        <div>
-          <label for="email">E-mail:</label>
-          <input type="email" id="email" v-model="user.email" required>
-        </div>
-  
-        <div>
-          <label for="password">Senha:</label>
-          <input type="password" id="password" v-model="user.password" required>
-        </div>
-  
-        <div>
-          <label for="confirmPassword">Confirmação de Senha:</label>
-          <input type="password" id="confirmPassword" v-model="confirmPassword" required>
-        </div>
-  
-        <div v-if="passwordMismatch">
-          <p>A senha e a confirmação de senha não são iguais.</p>
-        </div>
-  
-        <button type="submit">Entrar</button>
-      </form>
-    </div>
-  </template>
-  
-  <script>
-  export default {
-    name: 'LoginPage',
-    data() {
-      return {
-        user: {
-          firstName: '',
-          lastName: '',
-          email: '',
-          password: '',
-        },
-        confirmPassword: '',
-        passwordMismatch: false
-      };
-    },
-    methods: {
-      submitForm() {
-        if (this.user.password !== this.confirmPassword) {
-          this.passwordMismatch = true;
-        } else {
-          this.passwordMismatch = false;
-          // Aqui você pode adicionar a lógica de submissão do formulário, como uma requisição HTTP
-          console.log('Form submitted:', this.user);
-        }
-      }
+<script>
+import axios from 'axios'; // Importe o axios
+
+export default {
+  name: 'LoginPage',
+  data() {
+    return {
+      user: {
+        email: '', // Removido firstName e lastName pois não são mais usados
+        password: '',
+      },
+      confirmPassword: '', // Se não estiver usando, pode remover
+      passwordMismatch: false // Se não estiver usando, pode remover
+    };
+  },
+  methods: {
+    submitForm() {
+      // Supondo que não precisa mais da lógica de confirmPassword
+      axios.post('http://127.0.0.1:8000/login', this.user)
+        .then(response => {
+          // Trate a resposta aqui
+          console.log('Success:', response);
+          // Redirecione o usuário ou mostre uma mensagem de sucesso
+        })
+        .catch(error => {
+          // Trate o erro aqui
+          console.error('Error:', error.response);
+          // Mostre uma mensagem de erro, se necessário
+        });
     }
-  };
-  </script>
+  }
+};
+</script>
   
   <style scoped>
   .login-container {

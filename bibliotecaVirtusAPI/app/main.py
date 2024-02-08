@@ -1,17 +1,34 @@
 # app/main.py
 from fastapi import FastAPI, Depends, HTTPException, status
-from .schemas import UserCreate, Token, UserOut, UserLogin, UserResponse
+from .schemas import UserCreate, UserResponse
 from .models import User
 from .utils import get_password_hash, authenticate_user, create_access_token
 from .dependencies import get_db
 from datetime import timedelta
 from sqlalchemy.orm import Session
-from fastapi import Response
 from fastapi import Request
+from fastapi.middleware.cors import CORSMiddleware
+
 
 
 
 app = FastAPI()
+
+# Configuração CORS
+origins = [
+    "http://localhost",
+    "http://localhost:8080",
+    "http://127.0.0.1:8080",
+    "*",  # Isso permite todas as origens. Em produção, você deve considerar apenas as origens específicas.
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],  # Permite todos os métodos
+    allow_headers=["*"],  # Permite todos os cabeçalhos
+)
 
 @app.post("/login")
 async def login_for_access_token(request: Request, db: Session = Depends(get_db)):
@@ -42,9 +59,7 @@ async def login_for_access_token(request: Request, db: Session = Depends(get_db)
     return {"message": f"Bem-vindo {user.username}", "access_token": access_token, "token_type": "bearer"}
 
 
-
-
-@app.post("/cadastro", response_model=UserOut)
+@app.post("/cadastro", response_model=UserResponse)
 async def create_user(user: UserCreate, db: Session = Depends(get_db)):
     existing_user = db.query(User).filter(
         (User.username == user.username) | (User.email == user.email)).first()

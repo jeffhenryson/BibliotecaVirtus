@@ -1,6 +1,6 @@
 # app/main.py
 from fastapi import FastAPI, Depends, HTTPException, status
-from .schemas import UserCreate, Token, UserOut, UserLogin
+from .schemas import UserCreate, Token, UserOut, UserLogin, UserResponse
 from .models import User
 from .utils import get_password_hash, authenticate_user, create_access_token
 from .dependencies import get_db
@@ -53,12 +53,25 @@ async def create_user(user: UserCreate, db: Session = Depends(get_db)):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Username or email already registered"
         )
+        
     hashed_password = get_password_hash(user.password)
-    db_user = User(username=user.username, email=user.email, hashed_password=hashed_password)
+    
+    db_user = User(
+        username=user.username, 
+        primeiro_nome=user.primeiro_nome,  
+        segundo_nome=user.segundo_nome,    
+        email=user.email, 
+        hashed_password=hashed_password
+    )
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
-    return db_user
+    
+    # Personalize a mensagem de boas-vindas com o primeiro nome do usuário
+    welcome_message = f"Bem vindo {db_user.primeiro_nome}, estamos feliz em ter você aqui como contribuidor do acervo literário virtual Biblioteca Virtus."
+    
+    # Retorne o usuário e a mensagem personalizada
+    return UserResponse(user=db_user, message=welcome_message)
 
 if __name__ == "__main__":
     import uvicorn

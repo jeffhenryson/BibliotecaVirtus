@@ -5,6 +5,8 @@ from typing import Optional
 # Esquema para receber dados de usuário na criação
 class UserCreate(BaseModel):
     username: str = Field(..., example="johndoe")
+    primeiro_nome: str = Field(..., example="John")  
+    segundo_nome: str = Field(..., example="Doe")    
     email: EmailStr = Field(..., example="johndoe@example.com")
     password: str = Field(..., example="strongpassword")
 
@@ -12,10 +14,16 @@ class UserCreate(BaseModel):
 class UserOut(BaseModel):
     id: int
     username: str
+    primeiro_nome: str
+    segundo_nome: str 
     email: EmailStr
 
     class Config:
         from_attributes = True
+        
+class UserResponse(BaseModel):
+    user: UserOut
+    message: str
 
 # Esquema para dados de login do usuário
 class UserLogin(BaseModel):

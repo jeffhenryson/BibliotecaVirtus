@@ -1,33 +1,27 @@
-# app/main.py
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException, status, Request
+from sqlalchemy.orm import Session
 from .schemas import UserCreate, UserResponse
 from .models import User
 from .utils import get_password_hash, authenticate_user, create_access_token
 from .dependencies import get_db
 from datetime import timedelta
-from sqlalchemy.orm import Session
-from fastapi import Request
 from fastapi.middleware.cors import CORSMiddleware
-
-
-
 
 app = FastAPI()
 
-# Configuração CORS
 origins = [
     "http://localhost",
     "http://localhost:8080",
     "http://127.0.0.1:8080",
-    "*",  # Isso permite todas as origens. Em produção, você deve considerar apenas as origens específicas.
+    "*",
 ]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],  # Permite todos os métodos
-    allow_headers=["*"],  # Permite todos os cabeçalhos
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 @app.post("/login")
@@ -35,28 +29,32 @@ async def login_for_access_token(request: Request, db: Session = Depends(get_db)
     form_data = await request.json()
     email = form_data.get("email")
     password = form_data.get("password")
-    user = authenticate_user(db, email, password)  # Autenticar o usuário usando e-mail e senha
+    authentication_result = authenticate_user(db, email, password)
 
-        # Se as credenciais estiverem erradas (usuário não encontrado ou senha incorreta)
-    if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Credenciais erradas, tente novamente."
-        )
-
-    # Se o usuário não for encontrado pelo e-mail ou a senha estiver incorreta
-    if not user:
+    if authentication_result is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Email não registrado, faça cadastro para conseguir acessar o site."
+            detail="E-mail não registrado."
         )
+    elif isinstance(authentication_result, str) and authentication_result == "password_incorrect":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Senha incorreta, tente novamente."
+        )
+    elif not isinstance(authentication_result, User):
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Ocorreu um erro na autenticação."
+        )
+    else:
+        user = authentication_result
 
-    # Geração do token de acesso
     access_token_expires = timedelta(minutes=30)
     access_token = create_access_token(
         data={"sub": user.email}, expires_delta=access_token_expires
     )
     return {"message": f"Bem-vindo {user.username}", "access_token": access_token, "token_type": "bearer"}
+
 
 
 @app.post("/cadastro", response_model=UserResponse)

@@ -139,56 +139,118 @@ export default {
 </script>
 
 <style scoped>
-.signup-container {
-  max-width: 300px;
-  margin: 50px auto;
-  padding: 20px;
+/* Reset básico para remover estilos padrão do navegador */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body, html {
+  height: 100%;
+  margin: 0;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  background: #f0f2f5; /* Cor de fundo mais moderna e suave */
+  display: flex;
+  justify-content: center;
+  align-items: center;
   text-align: center;
-  border: 1px solid #ccc;
-  border-radius: 5px;
 }
 
-.form-group {
-  margin-bottom: 15px;
+/* Estilização do Container */
+.signup-container {
+  width: 100%;
+  max-width: 450px;
+  background: #ffffff;
+  padding: 2rem;
+  margin: 1rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
 }
 
-label {
+/* Estilização dos Grupos de Formulário */
+.form-group label {
+  font-size: 1rem;
+  color: #333;
+  margin-bottom: 0.5rem;
   display: block;
-  margin-bottom: 5px;
+  text-align: left;
 }
 
+/* Estilização dos Inputs */
 input[type="text"],
 input[type="email"],
 input[type="password"] {
+  font-size: 1rem;
+  padding: 0.75rem;
+  border: 1px solid #dcdfe4;
+  border-radius: 8px;
   width: 100%;
-  padding: 10px;
-  margin-bottom: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
+  transition: all 0.3s;
 }
 
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus {
+  outline: none;
+  border-color: #8aaae5;
+  box-shadow: 0 0 0 3px rgba(138, 170, 229, 0.2);
+}
+
+/* Estilização do Botão de Enviar */
 .btn-submit {
-  padding: 10px 20px;
-  width: 100%;
-  border-radius: 5px;
-  cursor: pointer;
-  background-color: #5cb85c;
+  padding: 1rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  background-image: linear-gradient(45deg, #06b, #06f);
   color: white;
-  border: 1px solid #4cae4c;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+  width: 100%;
+  margin-top: 1rem;
 }
 
+.btn-submit:hover,
+.btn-submit:focus {
+  background-image: linear-gradient(45deg, #058, #05f);
+}
+
+/* Mensagens de Erro e Sucesso */
 .error-message p,
 .success-message p {
-  color: #a94442;
-  background-color: #f2dede;
-  border-color: #ebccd1;
-  padding: 10px;
-  border-radius: 5px;
+  font-size: 0.875rem;
+  padding: 0.75rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+  text-align: left;
+}
+
+.error-message p {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
 }
 
 .success-message p {
-  color: #3c763d;
-  background-color: #dff0d8;
-  border-color: #d6e9c6;
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
 }
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .signup-container {
+    padding: 1.5rem;
+    margin: 0.5rem;
+  }
+
+  .btn-submit {
+    padding: 0.75rem 1rem;
+  }
+}
+
+/* Adicione mais estilos responsivos conforme necessário */
+
 </style>

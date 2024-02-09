@@ -2,52 +2,60 @@
   <div class="login-container">
     <h1>Login</h1>
     <form @submit.prevent="submitForm">
-
       <div>
         <label for="email">E-mail:</label>
         <input type="email" id="email" v-model="user.email" required>
       </div>
-
       <div>
         <label for="password">Senha:</label>
         <input type="password" id="password" v-model="user.password" required>
       </div>
-
       <button type="submit">Entrar</button>
+      <p v-if="errorMessage" v-html="errorMessage"></p>
     </form>
   </div>
 </template>
-
   
 <script>
-import axios from 'axios'; // Importe o axios
+import axios from 'axios';
 
 export default {
   name: 'LoginPage',
   data() {
     return {
       user: {
-        email: '', // Removido firstName e lastName pois não são mais usados
+        email: '',
         password: '',
       },
-      confirmPassword: '', // Se não estiver usando, pode remover
-      passwordMismatch: false // Se não estiver usando, pode remover
+      errorMessage: '', 
     };
   },
   methods: {
     submitForm() {
-      // Supondo que não precisa mais da lógica de confirmPassword
       axios.post('http://127.0.0.1:8000/login', this.user)
         .then(response => {
-          // Trate a resposta aqui
           console.log('Success:', response);
-          // Redirecione o usuário ou mostre uma mensagem de sucesso
+          localStorage.setItem('access_token', response.data.access_token);
+          this.$router.push('/'); 
         })
         .catch(error => {
-          // Trate o erro aqui
           console.error('Error:', error.response);
-          // Mostre uma mensagem de erro, se necessário
+          this.errorMessage = ''; 
+          if (error.response && error.response.data.detail) {
+            if (error.response.data.detail === "E-mail não registrado.") {
+              this.errorMessage = this.createSafeErrorMessage(
+                'O e-mail inserido não está cadastrado no sistema. Faça seu cadastro gratuito <a href="/cadastro">aqui</a>.'
+              );
+            } else {
+              this.errorMessage = error.response.data.detail;
+            }
+          } else {
+            this.errorMessage = 'Ocorreu um erro ao tentar fazer login.';
+          }
         });
+    },
+    createSafeErrorMessage(message) {
+      return message; 
     }
   }
 };

@@ -8,21 +8,76 @@
       abertos.</p>
     <p>Seja buscando novos conhecimentos, compartilhando suas experiências ou apenas explorando o que temos a oferecer,
       você está no lugar certo. Bem-vindo à jornada que começa agora. Estamos ansiosos para caminhar ao seu lado.</p>
+
+      <button @click="getRandomNumber">Obter Número</button>
+      <p v-if="randomNumberMessage" class="messageNumber">{{ randomNumberMessage }}</p>
   </div>
 </template>
 
 <script>
+import axios from 'axios';
+import { emitter } from '@/eventBus';
+
 export default {
   name: 'HomePage',
+  data() {
+    return {
+      randomNumberMessage: null
+    };
+  },
   computed: {
     username() {
       return localStorage.getItem('username');
     }
+  },
+  methods: {
+    userLoggedInHandler() {
+      console.log('Usuário logado, atualizando componente.');
+      this.$forceUpdate();
+    },
+    async getRandomNumber() {
+      try {
+        const username = this.username;
+        const response = await axios.get(`http://localhost:8000/number`, { params: { username } });
+        this.randomNumberMessage = response.data.message;
+      } catch (error) {
+        console.error('Erro ao obter o número aleatório:', error);
+        this.randomNumberMessage = 'Não foi possível obter um número. Tente novamente.';
+      }
+    }
+  },
+  mounted() {
+    emitter.on('user-logged-in', this.userLoggedInHandler);
+  },
+  unmounted() {
+    emitter.off('user-logged-in', this.userLoggedInHandler);
   }
 };
 </script>
+
   
 <style>
+  .home button {
+    background-color: #4CAF50; /* Green */
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border: none;
+    border-radius: 4px;
+  }
+
+  .messageNumber {
+    background-color: #f2f2f2;
+    padding: 10px;
+    border-left: 3px solid #4CAF50;
+    margin-top: 20px;
+  }
+
 .home {
   display: flex;
   flex-direction: column;

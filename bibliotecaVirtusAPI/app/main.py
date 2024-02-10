@@ -6,6 +6,7 @@ from .utils import get_password_hash, authenticate_user, create_access_token
 from .dependencies import get_db
 from datetime import timedelta
 from fastapi.middleware.cors import CORSMiddleware
+from random import randint
 
 app = FastAPI()
 
@@ -98,6 +99,18 @@ async def create_user(user: UserCreate, db: Session = Depends(get_db)):
     
     # Retorne o usuário e a mensagem personalizada
     return UserResponse(user=db_user, message=welcome_message)
+
+@app.get("/number")
+async def get_number(username: str, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Usuário não encontrado."
+        )
+    random_number = randint(1, 100) 
+    return {"message": f"Seu número é o {random_number}, {user.username}!"}
+
 
 if __name__ == "__main__":
     import uvicorn

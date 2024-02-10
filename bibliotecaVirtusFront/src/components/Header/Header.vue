@@ -2,24 +2,17 @@
   <header class="header">
     <nav>
       <router-link to="/">Home</router-link>
-
-      <!-- Inserir o MenuUserDropdown aqui se o usuário estiver logado -->
       <template v-if="userLoggedIn">
-        <!-- Componente MenuUserDropdown aqui -->
         <div class="relative" @click="toggleDropdown">
           <button class="text-white bg-blue-500 hover:bg-blue-700 font-medium py-2 px-4 rounded inline-flex items-center">
             <span>Conta</span>
           </button>
           <div v-if="showDropdown" class="absolute right-0 mt-2 py-2 w-48 bg-white rounded-md shadow-xl z-20">
-            <router-link to="/account"
-              class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-500 hover:text-white">Conta</router-link>
-            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-500 hover:text-white"
-              @click="logout">Logout</a>
+            <router-link to="/account" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-500 hover:text-white">Conta</router-link>
+            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-500 hover:text-white" @click.prevent="logout">Logout</a>
           </div>
         </div>
       </template>
-
-      <!-- Mostrar Login e Cadastro apenas se o usuário não estiver logado -->
       <template v-else>
         <router-link to="/login">Login</router-link>
         <router-link to="/signup">Cadastro</router-link>
@@ -27,8 +20,10 @@
     </nav>
   </header>
 </template>
-  
+
 <script>
+import { emitter } from '@/eventBus';
+
 export default {
   name: 'AppHeader',
   data() {
@@ -43,13 +38,24 @@ export default {
   },
   methods: {
     logout() {
-      this.$store.dispatch('logout');
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('username');
+      // Emitir evento de logout
+      emitter.emit('user-logged-out');
       this.$router.push('/login');
       this.showDropdown = false;
     },
     toggleDropdown() {
       this.showDropdown = !this.showDropdown;
     }
+  },
+  mounted() {
+    emitter.on('user-logged-in', () => this.$forceUpdate());
+    emitter.on('user-logged-out', () => this.$forceUpdate());
+  },
+  unmounted() {
+    emitter.off('user-logged-in');
+    emitter.off('user-logged-out');
   }
 };
 </script>

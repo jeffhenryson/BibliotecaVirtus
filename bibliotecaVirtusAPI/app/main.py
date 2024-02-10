@@ -29,31 +29,35 @@ async def login_for_access_token(request: Request, db: Session = Depends(get_db)
     form_data = await request.json()
     email = form_data.get("email")
     password = form_data.get("password")
-    authentication_result = authenticate_user(db, email, password)
+    user = authenticate_user(db, email, password)
 
-    if authentication_result is None:
+    if user is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="E-mail não registrado."
         )
-    elif isinstance(authentication_result, str) and authentication_result == "password_incorrect":
+    elif isinstance(user, str) and user == "password_incorrect":
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Senha incorreta, tente novamente."
         )
-    elif not isinstance(authentication_result, User):
+    elif not isinstance(user, User):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Ocorreu um erro na autenticação."
         )
-    else:
-        user = authentication_result
 
     access_token_expires = timedelta(minutes=30)
     access_token = create_access_token(
         data={"sub": user.email}, expires_delta=access_token_expires
     )
-    return {"message": f"Bem-vindo {user.username}", "access_token": access_token, "token_type": "bearer"}
+    
+    # Certifique-se de que o objeto `user` tem um atributo `username` que você pode usar
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "username": user.username  # Retorna o username na resposta
+    }
 
 
 

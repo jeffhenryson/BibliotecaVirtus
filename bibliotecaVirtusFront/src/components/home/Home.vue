@@ -9,10 +9,18 @@
     <p>Seja buscando novos conhecimentos, compartilhando suas experiências ou apenas explorando o que temos a oferecer,
       você está no lugar certo. Bem-vindo à jornada que começa agora. Estamos ansiosos para caminhar ao seu lado.</p>
 
+    <div class="home" v-if="username">
+      <input class="elegant-input" v-model="textToTranslate" placeholder="Digite um texto em português aqui">
+      <button class="elegant-button" @click="translateText">Traduzir</button>
+      <span>{{ translatedText }}</span>
+    </div>
+
+
     <button v-if="username" @click="getRandomNumber">Obter Número</button>
     <p v-if="randomNumberMessage && username">{{ randomNumberMessage }}</p>
   </div>
 </template>
+
 
 <script>
 import axios from 'axios';
@@ -22,6 +30,8 @@ export default {
   name: 'HomePage',
   data() {
     return {
+      textToTranslate: '',
+      translatedText: '',
       randomNumberMessage: null
     };
   },
@@ -34,6 +44,21 @@ export default {
     userLoggedInHandler() {
       console.log('Usuário logado, atualizando componente.');
       this.$forceUpdate();
+    },
+    async translateText() {
+      if (!this.textToTranslate.trim()) {
+        this.translatedText = 'Por favor, digite um texto para traduzir.';
+        return;
+      }
+      try {
+        const response = await axios.post('http://localhost:8000/translate', {
+          text: this.textToTranslate
+        });
+        this.translatedText = response.data.translated_text;
+      } catch (error) {
+        console.error('Erro ao traduzir o texto:', error);
+        this.translatedText = 'Erro na tradução. Tente novamente.';
+      }
     },
     async getRandomNumber() {
       try {
@@ -55,28 +80,64 @@ export default {
 };
 </script>
 
+
   
 <style>
-  .home button {
-    background-color: #4CAF50; /* Green */
-    color: white;
-    padding: 15px 32px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-    margin: 4px 2px;
-    cursor: pointer;
-    border: none;
-    border-radius: 4px;
-  }
 
-  .messageNumber {
-    background-color: #f2f2f2;
-    padding: 10px;
-    border-left: 3px solid #4CAF50;
-    margin-top: 20px;
-  }
+.home .elegant-button {
+  background-color: #4CAF50; /* Green */
+  color: white;
+  padding: 12px 24px;
+  font-size: 18px;
+  border: none;
+  border-radius: 5px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.home .elegant-button:hover {
+  background-color: #45a049;
+}
+
+.home .elegant-input {
+  margin: 0px 0;
+  box-sizing: border-box;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  background-color: #f8f8f8;
+  font-size: 16px;
+  width: 100%;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+  transition: border-color 0.3s;
+}
+
+.home .elegant-input:focus {
+  border-color: #4CAF50;
+  outline: none;
+}
+
+.home button {
+  background-color: #4CAF50;
+  /* Green */
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border: none;
+  border-radius: 4px;
+}
+
+.messageNumber {
+  background-color: #f2f2f2;
+  padding: 10px;
+  border-left: 3px solid #4CAF50;
+  margin-top: 20px;
+}
 
 .home {
   display: flex;

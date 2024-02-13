@@ -7,8 +7,17 @@ from .dependencies import get_db
 from datetime import timedelta
 from fastapi.middleware.cors import CORSMiddleware
 from random import randint
+from pydantic import BaseModel
+from langchain.llms import OpenAI
+import os
+
 
 app = FastAPI()
+
+class TranslationRequest(BaseModel):
+    text: str
+
+llm = OpenAI(temperature=0.9, api_key=os.getenv("APIKEY"))
 
 origins = [
     "http://localhost",
@@ -24,6 +33,19 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.post("/translate")
+async def translate(request: TranslationRequest):
+    if not request.text.strip():
+        raise HTTPException(status_code=400, detail="Text for translation is empty.")
+    
+    prompt = f"Translate the following sentence to English: {request.text}"
+    try:
+        translated_text = llm(prompt)
+        return {"translated_text": translated_text}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.post("/login")
 async def login_for_access_token(request: Request, db: Session = Depends(get_db)):

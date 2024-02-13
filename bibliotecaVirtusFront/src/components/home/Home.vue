@@ -9,8 +9,8 @@
     <p>Seja buscando novos conhecimentos, compartilhando suas experiências ou apenas explorando o que temos a oferecer,
       você está no lugar certo. Bem-vindo à jornada que começa agora. Estamos ansiosos para caminhar ao seu lado.</p>
 
-      <button @click="getRandomNumber">Obter Número</button>
-      <p v-if="randomNumberMessage" class="messageNumber">{{ randomNumberMessage }}</p>
+    <button v-if="username" @click="getRandomNumber">Obter Número</button>
+    <p v-if="randomNumberMessage && username">{{ randomNumberMessage }}</p>
   </div>
 </template>
 

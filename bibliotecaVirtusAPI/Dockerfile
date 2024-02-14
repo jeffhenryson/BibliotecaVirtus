@@ -10,6 +10,9 @@ COPY requirements.txt .
 # Install any dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Copy the .env file to the working directory
+COPY .env .
+
 # Copy the content of the local src directory to the working directory
 COPY ./app /code/app
 
